@@ -1,0 +1,6 @@
+# INV1 inverse-design validation point (HELD-OUT, not training data)
+# Designed off the fitted GP, then measured by NEMD (kappa) + tensile MD (E), 3 seeds each.
+# Do NOT merge into the 17-geometry training set before reporting LOOCV metrics.
+# neck_uc is the parent-tiling value (not measured; see paper Sec. 3.5).
+label,set,phi,S,stagger,neck_uc,AR,kappa,kappa_std,E,E_std,nu,nu_std
+INV1_AR2.5_s37,validation_heldout,19.26,3,37.5,2,2.5,2.362,0.178,68.40,0.15,0.417,0.008

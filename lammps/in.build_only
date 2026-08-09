@@ -1,0 +1,67 @@
+# ============================================================
+# Paper 3 - Build-only script (NO MD)
+# ============================================================
+# Creates the porous Si structure and writes a .data file.
+# No equilibration, no production - just generate atomic positions
+# so you can open them in OVITO and visually verify geometry.
+#
+# Usage:
+#   lmp -var label  bulk_si \
+#       -var pAxlo 0 -var pAxhi 0 -var pAylo 0 -var pAyhi 0 \
+#       -var pBxlo 0 -var pBxhi 0 -var pBylo 0 -var pByhi 0 \
+#       -in in.build_only
+#
+# Output: structure_${label}.data (LAMMPS data format, OVITO can open)
+# ============================================================
+
+units      metal
+dimension  3
+boundary   p p p
+atom_style atomic
+
+lattice    diamond 5.431
+region     box block 0 8 0 8 0 48
+create_box 1 box
+create_atoms 1 box
+mass       1 28.0855
+
+variable natoms_init equal count(all)
+print ">>> ATOMS_INIT: ${natoms_init}"
+
+# --- Pore A: 6 z-slices -----------------------------------
+if "${pAxhi} > ${pAxlo}" then &
+"region pA1 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi}  0  4 units lattice" &
+"region pA2 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi}  8 12 units lattice" &
+"region pA3 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi} 16 20 units lattice" &
+"region pA4 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi} 24 28 units lattice" &
+"region pA5 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi} 32 36 units lattice" &
+"region pA6 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi} 40 44 units lattice" &
+"delete_atoms region pA1" &
+"delete_atoms region pA2" &
+"delete_atoms region pA3" &
+"delete_atoms region pA4" &
+"delete_atoms region pA5" &
+"delete_atoms region pA6"
+
+# --- Pore B: 6 z-slices, offset from A --------------------
+if "${pBxhi} > ${pBxlo}" then &
+"region pB1 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi}  4  8 units lattice" &
+"region pB2 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 12 16 units lattice" &
+"region pB3 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 20 24 units lattice" &
+"region pB4 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 28 32 units lattice" &
+"region pB5 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 36 40 units lattice" &
+"region pB6 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 44 48 units lattice" &
+"delete_atoms region pB1" &
+"delete_atoms region pB2" &
+"delete_atoms region pB3" &
+"delete_atoms region pB4" &
+"delete_atoms region pB5" &
+"delete_atoms region pB6"
+
+variable natoms_final equal count(all)
+variable phi_actual equal 100.0*(${natoms_init}-${natoms_final})/${natoms_init}
+print ">>> ATOMS_FINAL: ${natoms_final}"
+print ">>> POROSITY_PCT: ${phi_actual}"
+
+write_data structure_${label}.data
+print ">>> DONE_${label}"

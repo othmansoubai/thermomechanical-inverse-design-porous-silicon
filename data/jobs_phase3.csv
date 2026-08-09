@@ -1,0 +1,70 @@
+# Paper 3 Phase 1 - Uniaxial Tensile MD job configurations (UPDATED)
+# 17 geometries x 3 seeds = 51 jobs
+#
+# Changes from v1:
+#   - DROPPED P1_low_50pct (the [1,4]x[1,4] / [4,7]x[4,7] bounds in the
+#     parametric script don't reproduce Paper 1's reported 6.84% phi;
+#     they give 17.68% with the 6-slice z-layout)
+#   - Added phi_actual column (atom-count-derived, from build_structures.py)
+#     This is the GROUND-TRUTH porosity for Paper 3 ML features.
+#
+# `label` matches `label` column in ml_dataset_paper2.csv (joinable on label).
+# Pore bounds in lattice units; SLURM script reads columns 2-12 (phi_actual
+# in column 13 is informational, not passed to LAMMPS).
+#
+# Group E (multi-pair, kappa~0.03) excluded - degenerate, will be reported
+# as a separate finding rather than included in ML training.
+# Validation V_S4d3 also excluded - kept as held-out mechanical validation point.
+#
+job_id,label,group,seed,pAxlo,pAxhi,pAylo,pAyhi,pBxlo,pBxhi,pBylo,pByhi,phi_actual
+1,bulk_si,P1,12345,0,0,0,0,0,0,0,0,0.00
+2,bulk_si,P1,34567,0,0,0,0,0,0,0,0,0.00
+3,bulk_si,P1,56789,0,0,0,0,0,0,0,0,0.00
+4,P1_high_50pct,P1,12345,0,4,0,4,4,8,4,8,28.27
+5,P1_high_50pct,P1,34567,0,4,0,4,4,8,4,8,28.27
+6,P1_high_50pct,P1,56789,0,4,0,4,4,8,4,8,28.27
+7,A_S2_d2,A,12345,0,2,0,2,2,4,2,4,8.54
+8,A_S2_d2,A,34567,0,2,0,2,2,4,2,4,8.54
+9,A_S2_d2,A,56789,0,2,0,2,2,4,2,4,8.54
+10,A_S2.5_d2,A,12345,0,2.5,0,2.5,2,4.5,2,4.5,12.63
+11,A_S2.5_d2,A,34567,0,2.5,0,2.5,2,4.5,2,4.5,12.63
+12,A_S2.5_d2,A,56789,0,2.5,0,2.5,2,4.5,2,4.5,12.63
+13,A_S3_d2,A,12345,0,3,0,3,2,5,2,5,17.50
+14,A_S3_d2,A,34567,0,3,0,3,2,5,2,5,17.50
+15,A_S3_d2,A,56789,0,3,0,3,2,5,2,5,17.50
+16,A_S4.5_d2,A,12345,0,4.5,0,4.5,2,6.5,2,6.5,36.78
+17,A_S4.5_d2,A,34567,0,4.5,0,4.5,2,6.5,2,6.5,36.78
+18,A_S4.5_d2,A,56789,0,4.5,0,4.5,2,6.5,2,6.5,36.78
+19,B_S4_aligned_low,B,12345,0,2,0,2,0,2,0,2,8.01
+20,B_S4_aligned_low,B,34567,0,2,0,2,0,2,0,2,8.01
+21,B_S4_aligned_low,B,56789,0,2,0,2,0,2,0,2,8.01
+22,B_S4_quarter_low,B,12345,0,2,0,2,4,6,4,6,8.59
+23,B_S4_quarter_low,B,34567,0,2,0,2,4,6,4,6,8.59
+24,B_S4_quarter_low,B,56789,0,2,0,2,4,6,4,6,8.59
+25,B_S4_aligned_high,B,12345,0,4,0,4,0,4,0,4,28.32
+26,B_S4_aligned_high,B,34567,0,4,0,4,0,4,0,4,28.32
+27,B_S4_aligned_high,B,56789,0,4,0,4,0,4,0,4,28.32
+28,B_S4_quarter_high,B,12345,0,4,0,4,2,6,2,6,29.57
+29,B_S4_quarter_high,B,34567,0,4,0,4,2,6,2,6,29.57
+30,B_S4_quarter_high,B,56789,0,4,0,4,2,6,2,6,29.57
+31,C_d0_aligned,C,12345,0,3,0,3,0,3,0,3,16.60
+32,C_d0_aligned,C,34567,0,3,0,3,0,3,0,3,16.60
+33,C_d0_aligned,C,56789,0,3,0,3,0,3,0,3,16.60
+34,C_d1_12pct,C,12345,0,3,0,3,1,4,1,4,17.14
+35,C_d1_12pct,C,34567,0,3,0,3,1,4,1,4,17.14
+36,C_d1_12pct,C,56789,0,3,0,3,1,4,1,4,17.14
+37,C_d3_37pct,C,12345,0,3,0,3,3,6,3,6,17.68
+38,C_d3_37pct,C,34567,0,3,0,3,3,6,3,6,17.68
+39,C_d3_37pct,C,56789,0,3,0,3,3,6,3,6,17.68
+40,C_d4_50pct,C,12345,0,3,0,3,4,7,4,7,17.72
+41,C_d4_50pct,C,34567,0,3,0,3,4,7,4,7,17.72
+42,C_d4_50pct,C,56789,0,3,0,3,4,7,4,7,17.72
+43,D_AR0.5_tall,D,12345,0,2,0,4,2,4,2,6,15.93
+44,D_AR0.5_tall,D,34567,0,2,0,4,2,4,2,6,15.93
+45,D_AR0.5_tall,D,56789,0,2,0,4,2,4,2,6,15.93
+46,D_AR2.0_wide,D,12345,0,4,0,2,2,6,2,4,15.93
+47,D_AR2.0_wide,D,34567,0,4,0,2,2,6,2,4,15.93
+48,D_AR2.0_wide,D,56789,0,4,0,2,2,6,2,4,15.93
+49,D_AR2.5_vwide,D,12345,0,5,0,2,2,7,2,4,19.63
+50,D_AR2.5_vwide,D,34567,0,5,0,2,2,7,2,4,19.63
+51,D_AR2.5_vwide,D,56789,0,5,0,2,2,7,2,4,19.63

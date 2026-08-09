@@ -1,0 +1,151 @@
+# ============================================================
+# Parametric NEMD Müller-Plathe — Porous Silicon Phase 2
+# ============================================================
+# Pores defined in x-y CROSS-SECTION (units lattice),
+# distributed along z (heat flow direction) — exactly like Paper 1.
+#
+# Architecture:
+#   6 × Pore-A slices at z = 0-4, 8-12, 16-20, 24-28, 32-36, 40-44
+#   6 × Pore-B slices at z = 4-8, 12-16, 20-24, 28-32, 36-40, 44-48
+#   Pore A occupies x-y quadrant: [pAxlo,pAxhi] × [pAylo,pAyhi]
+#   Pore B occupies x-y quadrant: [pBxlo,pBxhi] × [pBylo,pByhi]
+#
+# Stagger is controlled by the x-y offset between A and B:
+#   Aligned (0%):        pA=[0,4,0,4]  pB=[0,4,0,4]  (same quadrant)
+#   Quarter (25%):       pA=[0,4,0,4]  pB=[2,6,2,6]  (shifted 2 cells)
+#   Full stagger (50%):  pA=[0,4,0,4]  pB=[4,8,4,8]  ← Paper 1
+#
+# All coordinates in LATTICE UNITS (unit cells), a=5.431 Å
+#
+# Usage:
+#   lmp -var seed   12345 \
+#       -var label  grpB_fullstagger_28pct \
+#       -var pAxlo  0 -var pAxhi  4 -var pAylo  0 -var pAyhi  4 \
+#       -var pBxlo  4 -var pBxhi  8 -var pBylo  4 -var pByhi  8 \
+#       -in in.nemd_porous_parametric
+# ============================================================
+
+# ── NEMD parameters ─────────────────────────────────────────
+variable T0      equal 300.0
+variable dt      equal 0.001
+variable teq     equal 50.0        # equilibration time (ps)
+variable tswitch equal 20.0        # NVT→NVE switch time (ps)
+variable tnemd   equal 500.0       # production time (ps)
+variable Neq     equal ${teq}/${dt}
+variable Nswitch equal ${tswitch}/${dt}
+variable Nnemd   equal ${tnemd}/${dt}
+variable Nswap   equal 100
+variable Nslabs  equal 20
+variable Nthermo equal 10000
+
+# ── Build structure ─────────────────────────────────────────
+units     metal
+dimension 3
+boundary  p p p
+atom_style atomic
+
+lattice   diamond 5.431
+region    box block 0 8 0 8 0 48
+create_box 1 box
+create_atoms 1 box
+mass      1 28.0855
+
+variable natoms_init equal count(all)
+print ">>> ATOMS_INIT: ${natoms_init}"
+
+# ── Delete pore A (6 slices along z) ─────────────────────────
+# Each slice: x=[pAxlo,pAxhi], y=[pAylo,pAyhi], z=4 cells wide
+region pA1 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi}  0  4 units lattice
+region pA2 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi}  8 12 units lattice
+region pA3 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi} 16 20 units lattice
+region pA4 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi} 24 28 units lattice
+region pA5 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi} 32 36 units lattice
+region pA6 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi} 40 44 units lattice
+
+group dA1 region pA1
+group dA2 region pA2
+group dA3 region pA3
+group dA4 region pA4
+group dA5 region pA5
+group dA6 region pA6
+group allA union dA1 dA2 dA3 dA4 dA5 dA6
+
+# ── Delete pore B (6 slices along z, offset from A) ──────────
+region pB1 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi}  4  8 units lattice
+region pB2 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 12 16 units lattice
+region pB3 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 20 24 units lattice
+region pB4 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 28 32 units lattice
+region pB5 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 36 40 units lattice
+region pB6 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 44 48 units lattice
+
+group dB1 region pB1
+group dB2 region pB2
+group dB3 region pB3
+group dB4 region pB4
+group dB5 region pB5
+group dB6 region pB6
+group allB union dB1 dB2 dB3 dB4 dB5 dB6
+
+# ── Delete all pore atoms ─────────────────────────────────────
+group alldel union allA allB
+delete_atoms group alldel
+
+# ── Report actual porosity ─────────────────────────────────────
+# Use v_ prefix for dynamic evaluation (same as Paper 1)
+variable natoms equal count(all)
+variable ndel   equal v_natoms_init-v_natoms
+variable phi    equal 1.0*v_ndel/v_natoms_init*100.0
+print ">>> ATOMS: bulk=${natoms_init}  remaining=${natoms}"
+print ">>> ACTUAL POROSITY: ${phi} %"
+print ">>> LABEL: ${label}  SEED: ${seed}"
+
+# ── Forcefield ────────────────────────────────────────────────
+pair_style sw
+pair_coeff * * Si.sw Si
+
+# ── Minimize + equilibrate ────────────────────────────────────
+minimize 1.0e-8 1.0e-8 1000 10000
+velocity all create ${T0} ${seed} dist gaussian
+
+fix eq all nvt temp ${T0} ${T0} 0.1
+thermo ${Nthermo}
+thermo_style custom step temp pe ke etotal press density
+run ${Neq}
+unfix eq
+
+print ">>> EQUILIBRATION COMPLETE"
+
+# ── NVT → NVE switch ─────────────────────────────────────────
+fix nve all nve
+run ${Nswitch}
+reset_timestep 0
+
+# ── NEMD production (Müller-Plathe) ──────────────────────────
+compute layers all chunk/atom bin/1d z lower $(lz/20) units box
+fix tprof all ave/chunk 100 100 10000 layers temp &
+    file temp_profile_${label}_seed${seed}.dat
+
+fix mp all thermal/conductivity ${Nswap} z ${Nslabs}
+
+# Log energy transferred every Nthermo steps → used by analyze_kappa.py
+variable E_xfr equal f_mp
+fix E_log all ave/time ${Nthermo} 1 ${Nthermo} v_E_xfr &
+    file e_transfer_${label}_seed${seed}.dat
+
+variable elapsed_ps equal step*${dt}
+thermo ${Nthermo}
+thermo_style custom step v_elapsed_ps temp pe ke etotal press f_mp
+
+run ${Nnemd}
+
+# ── Summary ───────────────────────────────────────────────────
+variable E_total  equal f_mp
+variable Lx_m     equal lx*1e-10
+variable Ly_m     equal ly*1e-10
+variable A_cross  equal ${Lx_m}*${Ly_m}
+variable t_prod_s equal ${Nnemd}*${dt}*1e-12
+
+print ">>> FINAL E_TRANSFERRED (eV): ${E_total}"
+print ">>> CROSS-SECTION A (m^2): ${A_cross}"
+print ">>> PRODUCTION TIME (s): ${t_prod_s}"
+print ">>> DONE: ${label} seed=${seed}"

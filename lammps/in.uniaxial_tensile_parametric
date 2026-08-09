@@ -1,0 +1,160 @@
+# ============================================================
+# Paper 3 Phase 1 - Parametric Uniaxial Tensile MD
+# ============================================================
+# Mechanical characterization of porous Si metamaterials.
+# Architecture mirrors in.nemd_porous_parametric (Phase 2):
+#   6 Pore-A slices at z = 0-4, 8-12, 16-20, 24-28, 32-36, 40-44
+#   6 Pore-B slices at z = 4-8, 12-16, 20-24, 28-32, 36-40, 44-48
+# Loading is along x; y,z under NPT barostat at zero pressure.
+#
+# Outputs allow extraction of:
+#   E   = d(sxx)/d(exx) in linear regime (exx ~ 0.0005 - 0.005)
+#   nu  = -d(eyy)/d(exx)  (and -d(ezz)/d(exx); average for isotropy check)
+#   K   = E / [3 (1 - 2 nu)]              (isotropic estimate)
+#   eps_y, sigma_max from full sigma-eps curve
+#
+# Required -var flags:
+#   label, seed
+#   pAxlo pAxhi pAylo pAyhi   - Pore A x-y bounds (lattice units)
+#   pBxlo pBxhi pBylo pByhi   - Pore B x-y bounds (lattice units)
+#                              (lo == hi disables that pore)
+#   erate, max_strain          (planning values: 1e-4 /ps and 0.10)
+#
+# Box: 8 x 8 x 48 unit cells (hardcoded, matches Phase 2 exactly)
+# Output files: stress_strain_${label}_seed${seed}.dat
+#               final_${label}_seed${seed}.data
+# ============================================================
+
+# --- Run-time parameters ------------------------------------
+variable T0      equal 300.0
+variable dt      equal 0.001       # 1 fs
+variable teq     equal 50.0        # NPT equilibration time (ps)
+variable Neq     equal ${teq}/${dt}
+variable Nthermo equal 5000
+
+units     metal
+dimension 3
+boundary  p p p
+atom_style atomic
+timestep  ${dt}
+
+# --- Build structure (same as Phase 2) ----------------------
+lattice   diamond 5.431
+region    box block 0 8 0 8 0 48
+create_box 1 box
+create_atoms 1 box
+mass      1 28.0855
+
+variable natoms_init equal count(all)
+print ">>> ATOMS_INIT: ${natoms_init}"
+
+# --- Pore A: 6 z-slices (only if x-bounds non-degenerate) ---
+if "${pAxhi} > ${pAxlo}" then &
+"region pA1 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi}  0  4 units lattice" &
+"region pA2 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi}  8 12 units lattice" &
+"region pA3 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi} 16 20 units lattice" &
+"region pA4 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi} 24 28 units lattice" &
+"region pA5 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi} 32 36 units lattice" &
+"region pA6 block ${pAxlo} ${pAxhi} ${pAylo} ${pAyhi} 40 44 units lattice" &
+"delete_atoms region pA1" &
+"delete_atoms region pA2" &
+"delete_atoms region pA3" &
+"delete_atoms region pA4" &
+"delete_atoms region pA5" &
+"delete_atoms region pA6"
+
+# --- Pore B: 6 z-slices, offset from A ----------------------
+if "${pBxhi} > ${pBxlo}" then &
+"region pB1 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi}  4  8 units lattice" &
+"region pB2 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 12 16 units lattice" &
+"region pB3 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 20 24 units lattice" &
+"region pB4 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 28 32 units lattice" &
+"region pB5 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 36 40 units lattice" &
+"region pB6 block ${pBxlo} ${pBxhi} ${pBylo} ${pByhi} 44 48 units lattice" &
+"delete_atoms region pB1" &
+"delete_atoms region pB2" &
+"delete_atoms region pB3" &
+"delete_atoms region pB4" &
+"delete_atoms region pB5" &
+"delete_atoms region pB6"
+
+variable natoms_final equal count(all)
+variable phi_actual   equal 100.0*(${natoms_init}-${natoms_final})/${natoms_init}
+print ">>> ATOMS_FINAL: ${natoms_final}"
+print ">>> POROSITY_PCT: ${phi_actual}"
+
+# --- Potential ----------------------------------------------
+pair_style sw
+pair_coeff * * Si.sw Si
+
+velocity   all create ${T0} ${seed} mom yes rot yes dist gaussian
+
+# ============================================================
+# STAGE 1 - NPT equilibration (300 K, zero pressure, isotropic)
+# ============================================================
+# Important: Phase 2 .data files were equilibrated under NEMD
+# (asymmetric thermal flux). For mechanical loading we need a
+# uniform 300 K, zero-pressure reference state.
+fix          eq all npt temp ${T0} ${T0} 0.1 iso 0.0 0.0 1.0
+thermo       ${Nthermo}
+thermo_style custom step temp press vol lx ly lz pxx pyy pzz
+run          ${Neq}
+unfix        eq
+
+# --- Freeze reference (zero-strain) cell dimensions ---------
+variable Lx_now equal lx
+variable Ly_now equal ly
+variable Lz_now equal lz
+variable V_now  equal vol
+variable Lx0    equal ${Lx_now}
+variable Ly0    equal ${Ly_now}
+variable Lz0    equal ${Lz_now}
+variable V0     equal ${V_now}
+print ">>> REFERENCE_DIMS Lx0=${Lx0} Ly0=${Ly0} Lz0=${Lz0} V0=${V0}"
+
+# ============================================================
+# STAGE 2 - Uniaxial tensile (x); barostat on y,z
+# ============================================================
+# Engineering strains
+variable exx  equal (lx-${Lx0})/${Lx0}
+variable eyy  equal (ly-${Ly0})/${Ly0}
+variable ezz  equal (lz-${Lz0})/${Lz0}
+variable evol equal (vol-${V0})/${V0}
+
+# Cauchy stresses in GPa (tensile positive). LAMMPS press is in
+# bar (metal units); 1 bar = 1e-4 GPa; sigma = -p.
+#
+# Define an explicit pressure compute so the tensor components are always
+# available. Referencing the global thermo keywords pxx/pyy/pzz in a
+# variable fails ("requires thermo to use/init press") unless press is
+# already being computed; an explicit compute + c_ reference is robust.
+compute  pp all pressure thermo_temp
+variable sxx equal -c_pp[1]*1.0e-4
+variable syy equal -c_pp[2]*1.0e-4
+variable szz equal -c_pp[3]*1.0e-4
+
+variable cstep equal step
+variable ctemp equal temp
+
+# x: deform-controlled at fixed engineering rate (remap atoms).
+# y,z: NPT barostat at zero pressure (Poisson contraction allowed).
+# fix npt also handles the thermostat - do NOT add a separate fix nvt.
+fix def  all deform 1 x erate ${erate} remap x units box
+fix tens all npt temp ${T0} ${T0} 0.1 y 0.0 0.0 1.0 z 0.0 0.0 1.0
+
+thermo       ${Nthermo}
+thermo_style custom step temp v_exx v_eyy v_ezz v_sxx v_syy v_szz vol
+
+# Time-series data for analysis (every 100 steps = 0.1 ps)
+fix stress_out all print 100 &
+"${cstep} ${ctemp} ${exx} ${eyy} ${ezz} ${sxx} ${syy} ${szz} ${evol}" &
+file stress_strain_${label}_seed${seed}.dat screen no &
+title "# step temp exx eyy ezz sxx_GPa syy_GPa szz_GPa evol"
+
+variable run_steps equal round(${max_strain}/${erate}/${dt})
+print ">>> DEFORMING ${run_steps} steps to strain ${max_strain} at erate=${erate}/ps"
+run ${run_steps}
+
+# --- Final state --------------------------------------------
+write_data final_${label}_seed${seed}.data
+print ">>> DONE_${label}_seed${seed}"
