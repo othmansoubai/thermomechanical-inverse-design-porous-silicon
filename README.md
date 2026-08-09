@@ -100,6 +100,7 @@ submitted). Thermal: reverse NEMD after Müller-Plathe, 500 ps production,
 
 ```bash
 python3 code/analyze_kappa.py        # κ per geometry
+python3 code/analyze_kappa_inv1.py   # κ for INV1, from the shipped raw output
 python3 code/analyze_elastic.py      # E, ν per geometry
 python3 code/paper3_multiobj_ml.py   # models, Pareto front, first-pass search
 python3 code/build_aware_search.py   # build-aware correction; final candidate
