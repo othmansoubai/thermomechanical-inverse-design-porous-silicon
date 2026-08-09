@@ -33,7 +33,7 @@ import numpy as np
 
 LABEL  = "INV1_AR2.5_s37"
 SEEDS  = [12345, 45678, 78901]
-RESULTS = os.path.expanduser("./results")
+RESULTS = os.path.expanduser(os.environ.get("RESULTS_DIR", "results_thermal"))
 LOGDIR  = os.path.expanduser("./logs")
 EV_J   = 1.602176634e-19
 NSLABS = 20            # matches Nslabs in the NEMD input
@@ -150,7 +150,8 @@ def main():
 
         kappa = (E_eV * EV_J) / (2.0 * A * t * dTdz)
         kappas.append(kappa); phis.append(phi)
-        print(f"  seed {seed}:  phi={phi:5.2f}%  |dT/dz|={dTdz:.3e} K/m  "
+        phi_txt = f"phi={phi:5.2f}%  " if np.isfinite(phi) else ""
+        print(f"  seed {seed}:  {phi_txt}|dT/dz|={dTdz:.3e} K/m  "
               f"E_swap={E_eV:.4g} eV  ->  kappa = {kappa:.3f} W/m.K")
         print(f"            (branch slopes {s1:+.3e} / {s2:+.3e} K/m)")
 
@@ -158,8 +159,9 @@ def main():
         k = np.array(kappas)
         print("-" * 64)
         print(f"  kappa = {k.mean():.3f} +/- {k.std(ddof=1) if len(k)>1 else 0:.3f} W/m.K "
-              f"(n={len(k)})   phi ~ {np.nanmean(phis):.2f}%")
-        print(f"  GP prediction: kappa 2.4-2.7 W/m.K   |   target: 2.4 W/m.K")
+              f"(n={len(k)})" + ("" if not np.any(np.isfinite(phis))
+                        else f"   phi ~ {np.nanmean(phis):.2f}%"))
+        print(f"  GP prediction: kappa 2.380 W/m.K (1-sigma 2.048-2.765)   |   target: 2.4 W/m.K")
         print("=" * 64)
     else:
         print("  no kappa values computed -- check that results/ has the .dat files.")
