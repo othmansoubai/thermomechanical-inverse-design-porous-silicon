@@ -25,6 +25,7 @@ data/        the coupled dataset and the held-out validation point
 lammps/      LAMMPS input decks and the Stillinger–Weber parameter file
 slurm/       job scripts as run on the MARWAN HPC cluster
 structures/  the designed geometry INV1 as a LAMMPS data file
+results_thermal/  raw NEMD output for INV1 (three seeds)
 ```
 
 ### `data/`
@@ -40,6 +41,24 @@ structures/  the designed geometry INV1 as a LAMMPS data file
 
 Porosity throughout is **atom-counted** from the constructed configuration,
 not taken from the nominal footprint area.
+
+### `results_thermal/`
+
+Raw reverse-NEMD output for the inverse-designed geometry INV1, for three
+independent velocity seeds: `temp_profile_*.dat` holds the steady-state
+temperature profile along the transport axis, `e_transfer_*.dat` the cumulative
+kinetic energy exchanged by the swap algorithm. Reducing them with
+`code/analyze_kappa_inv1.py` returns κ = 2.36 ± 0.18 W m⁻¹ K⁻¹, the value
+reported for INV1, so the headline thermal result can be derived from the raw
+simulation output rather than taken on trust.
+
+The temperature profile is accumulated on four bins along the transport
+direction rather than the twenty intended — a limitation discussed in the
+manuscript. These are the raw profiles, so its consequence can be inspected
+directly.
+
+Raw output for the seventeen training geometries is not included; it is
+available from the corresponding author on request.
 
 ### `code/`
 
