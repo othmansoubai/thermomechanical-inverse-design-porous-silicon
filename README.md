@@ -1,6 +1,6 @@
 # Multi-objective inverse design of thermomechanical porous silicon
 
-Code, data and figures for a study that treats thermal conductivity (κ) and
+Code and data for a study that treats thermal conductivity (κ) and
 Young's modulus (E) as coupled objectives for porous silicon, maps the κ–E
 Pareto front over 17 geometries, and uses a build-aware inverse search to
 design a new structure at a targeted point on that plane.
