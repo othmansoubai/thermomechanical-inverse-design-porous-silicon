@@ -1,4 +1,4 @@
-# Multi-objective inverse design of thermomechanical porous silicon
+# Machine-learning-guided multi-objective inverse design of porous silicon
 
 Code and data for a study that treats thermal conductivity (κ) and
 Young's modulus (E) as coupled objectives for porous silicon, maps the κ–E
@@ -12,8 +12,10 @@ returned **κ = 2.36 ± 0.18 W m⁻¹ K⁻¹** and **E = 68.4 ± 0.15 GPa**. INV
 excluded from all model fitting, so this is a held-out test of the design
 procedure rather than of a fit.
 
-A manuscript describing this work is under review; this README will be
-updated with the reference on publication.
+A manuscript describing this work, by Othman Soubai and Younes Abouelhanoune
+(LSA Laboratory, ENSAH, Abdelmalek Essaadi University, Al-Hoceima, Morocco), is
+under review. This README will be updated with the full reference on
+publication.
 
 ---
 
@@ -44,18 +46,29 @@ not taken from the nominal footprint area.
 
 ### `results_thermal/`
 
-Raw reverse-NEMD output for the inverse-designed geometry INV1, for three
-independent velocity seeds: `temp_profile_*.dat` holds the steady-state
-temperature profile along the transport axis, `e_transfer_*.dat` the cumulative
-kinetic energy exchanged by the swap algorithm. Reducing them with
-`code/analyze_kappa_inv1.py` returns κ = 2.36 ± 0.18 W m⁻¹ K⁻¹, the value
-reported for INV1, so the headline thermal result can be derived from the raw
-simulation output rather than taken on trust.
+Raw reverse-NEMD output for the inverse-designed geometry INV1, three
+independent velocity seeds, at **two profile resolutions**. In each,
+`temp_profile_*.dat` holds the steady-state temperature profile along the
+transport axis and `e_transfer_*.dat` the cumulative kinetic energy exchanged
+by the swap algorithm.
 
-The temperature profile is accumulated on four bins along the transport
-direction rather than the twenty intended — a limitation discussed in the
-manuscript. These are the raw profiles, so its consequence can be inspected
-directly.
+| files | profile | reduce with | result |
+|---|---|---|---|
+| `*_seed*.dat` | four bins, as used for the whole dataset | `code/analyze_kappa_inv1.py` | κ = 2.36 ± 0.18 W m⁻¹ K⁻¹ |
+| `*_20bin_seed*.dat` | twenty bins, the intended resolution | `code/analyze_kappa_inv1_20bin.py` | κ = 2.323 ± 0.017 W m⁻¹ K⁻¹ |
+
+The four-bin set is what the manuscript reports, because it is the reduction
+applied to every geometry and used to train the models, and so the only value
+commensurable with the prediction. The twenty-bin set is a re-derivation of the
+same geometry with the binning corrected, run to test whether the coarse
+profile biased the result: it does not — the two agree to within 0.38 standard
+errors of the seed means. The finer profile also allows the linearity of the
+temperature gradient to be checked, which two points per branch cannot: the
+per-branch fits return R² = 0.989–0.995, so the profile is linear to better
+than 1 % with no detectable curvature near the thermostatted slabs.
+
+Both reductions can therefore be run from the shipped data, and the headline
+thermal result derived rather than taken on trust.
 
 Raw output for the seventeen training geometries is not included; it is
 available from the corresponding author on request.
@@ -69,7 +82,8 @@ available from the corresponding author on request.
 | `paper3_multiobj_ml.py` | merge → RF/GP forward models → Pareto front → first-pass inverse search |
 | `build_aware_search.py` | second pass: builds each candidate, counts its atoms, re-ranks at true porosity |
 | `analyze_kappa.py` | NEMD reduction: κ from the temperature profile and swap energy |
-| `analyze_kappa_inv1.py` | the same reduction applied to INV1 |
+| `analyze_kappa_inv1.py` | the same reduction applied to INV1 (four-bin profile) |
+| `analyze_kappa_inv1_20bin.py` | INV1 at the corrected twenty-bin resolution, with per-branch fit quality |
 | `analyze_elastic.py` | E, ν and transverse asymmetry from stress–strain data |
 | `analyze_E_inv1.py` | the same fit applied to INV1 |
 | `make_paper3_figures.py` | Figures 2–6 |
@@ -99,10 +113,12 @@ submitted). Thermal: reverse NEMD after Müller-Plathe, 500 ps production,
 **3. Reduce and model.**
 
 ```bash
-python3 code/analyze_kappa.py        # κ per geometry
-python3 code/analyze_elastic.py      # E, ν per geometry
-python3 code/paper3_multiobj_ml.py   # models, Pareto front, first-pass search
-python3 code/build_aware_search.py   # build-aware correction; final candidate
+python3 code/analyze_kappa.py            # κ per geometry
+python3 code/analyze_kappa_inv1.py       # κ for INV1, from the shipped raw output
+python3 code/analyze_kappa_inv1_20bin.py # the same at twenty-bin resolution
+python3 code/analyze_elastic.py          # E, ν per geometry
+python3 code/paper3_multiobj_ml.py       # models, Pareto front, first-pass search
+python3 code/build_aware_search.py       # build-aware correction; final candidate
 ```
 
 The two search steps disagree by design, and that disagreement is the
