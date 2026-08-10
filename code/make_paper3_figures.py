@@ -12,8 +12,11 @@ Reads paper3_multiobj_dataset.csv (17 geometries) and produces:
 Fig 1 (structure schematic) is an OVITO render (use render_structures.py) - not here.
 
 Usage (analysis venv, from ~/phase3_mech):
+    module purge && module load GCCcore/12.3.0 Python/3.11.3-GCCcore-12.3.0
+    source ~/phase2_ml/analysis_env/bin/activate
     python3 make_paper3_figures.py                 # uses paper3_multiobj_dataset.csv
     python3 make_paper3_figures.py mydataset.csv   # or a custom path
+    deactivate
 """
 
 import os
@@ -35,8 +38,7 @@ from sklearn.inspection import permutation_importance
 RS = 42
 np.random.seed(RS)
 DATA = sys.argv[1] if len(sys.argv) > 1 else "paper3_multiobj_dataset.csv"
-FIGURES_DIR = os.path.expanduser(
-    os.environ.get("FIGURES_DIR", "figures"))   # override with FIGURES_DIR
+FIGURES_DIR = os.path.expanduser("~/phase3_mech/figures")   # all figures land here
 FEATURES = ["phi", "S", "stagger", "neck_uc", "AR"]
 
 # ---- shared style ---------------------------------------------------------
@@ -109,13 +111,17 @@ def fig_pareto(d):
                label="Pareto-optimal", zorder=3)
     order = np.argsort(k[nd])
     ax.plot(k[nd][order], E[nd][order], "-", c=TEAL, lw=1.5, alpha=0.7, zorder=1)
-    nudge = {"P1_high_50pct": (4, 8), "B_S4_quarter_high": (4, -10),
-             "D_AR2.0_wide": (6, 4), "D_AR2.5_vwide": (4, -10),
-             "B_S4_quarter_low": (6, -2)}
+    nudge = {"P1_high_50pct": (6, 8), "B_S4_quarter_high": (6, -12),
+             "D_AR2.0_wide": (-8, 10), "D_AR2.5_vwide": (-8, -12),
+             "B_S4_quarter_low": (8, -8), "A_S2_d2": (-6, 10),
+             "B_S4_aligned_low": (0, 14), "bulk_si": (-8, 6),
+             "A_S4.5_d2": (8, 2)}
     for lbl, kk, ee in zip(d["label"][nd], k[nd], E[nd]):
         dx, dy = nudge.get(lbl, (4, 3))
+        ha = "right" if dx < 0 else ("center" if dx == 0 else "left")
         ax.annotate(lbl.replace("_", " "), (kk, ee), fontsize=7,
-                    xytext=(dx, dy), textcoords="offset points")
+                    xytext=(dx, dy), textcoords="offset points", ha=ha)
+    ax.margins(x=0.08, y=0.08)
     ax.set_xlabel(r"thermal conductivity $\kappa$ (W m$^{-1}$K$^{-1}$)")
     ax.set_ylabel(r"Young's modulus $E$ (GPa)")
     ax.set_title("Thermal-mechanical trade-off:\n1 bulk reference + 16 porous architectures")
@@ -217,7 +223,9 @@ def fig_inverse_selection(d):
     a2.plot(AR, k_true, "o-", c=CORAL, lw=1.6, ms=9, mec="k", label=r"true (built) $\phi$")
     a2.axhline(TARGET["kappa"], color=AMBER, ls=":", lw=1.5, label=r"target $\kappa$=2.4")
     a2.annotate("held-$\\phi$ pick", (2.0, k_held[1]), fontsize=8, color="#6a6a63",
-                xytext=(0, 14), textcoords="offset points", ha="center", fontweight="bold")
+                xytext=(26, 20), textcoords="offset points", ha="left",
+                fontweight="bold",
+                arrowprops=dict(arrowstyle="-", color="#6a6a63", lw=0.8))
     a2.annotate("build-aware pick", (2.5, k_true[2]), fontsize=8, color=CORAL,
                 xytext=(-12, 10), textcoords="offset points", ha="right", fontweight="bold")
     a2.set_xlabel("aspect ratio AR"); a2.set_ylabel(r"GP-predicted $\kappa$ (W m$^{-1}$K$^{-1}$)")
@@ -234,9 +242,16 @@ def fig_validation(d):
     fig, ax = plt.subplots(figsize=(6.4, 4.8))
     ax.scatter(reg["kappa"], reg["E"], s=55, c=TEAL, edgecolor="k", lw=0.5,
                zorder=2, label="existing geometries")
+    nudge = {"C_d3_37pct": (-6, -12), "C_d4_50pct": (6, 5),
+             "D_AR0.5_tall": (-6, 8), "A_S3_d2": (6, 2),
+             "D_AR2.5_vwide": (6, 3), "D_AR2.0_wide": (-6, 6)}
     for lbl, kk, ee in zip(reg["label"], reg["kappa"], reg["E"]):
+        dx, dy = nudge.get(lbl, (4, 3))
+        ha = "right" if dx < 0 else "left"
         ax.annotate(lbl.replace("_", " "), (kk, ee), fontsize=6.5,
-                    xytext=(4, 3), textcoords="offset points", color="#555")
+                    xytext=(dx, dy), textcoords="offset points",
+                    color="#555", ha=ha)
+    ax.margins(x=0.10)
     # target crosshair
     ax.errorbar(TARGET["kappa"], TARGET["E"], fmt="+", ms=16, mew=2, c=AMBER, zorder=3)
     ax.annotate("target (2.4, 70)", (TARGET["kappa"], TARGET["E"]), color=AMBER,

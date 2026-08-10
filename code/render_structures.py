@@ -6,8 +6,15 @@ Reads LAMMPS .data files and renders 3D + 2D views with matplotlib.
 Fully reproducible (same code = same figure every time).
 
 Usage on MARWAN:
+    cd ~/phase3_mech
+    module purge
+    module load GCCcore/12.3.0 Python/3.11.3-GCCcore-12.3.0
+    source ~/phase2_ml/analysis_env/bin/activate
     python3 render_structures.py
+    deactivate
+
 Then download the PNG files to your laptop:
+    scp 'o.soubai@login02:~/phase3_mech/figures/*.png' ./
 
 Outputs:
     figures/fig1_panel_<label>.png     - 3D perspective views
@@ -21,10 +28,8 @@ from matplotlib.patches import Rectangle
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 # ---- Configuration ---------------------------------------------------------
-STRUCTURES_DIR = os.path.expanduser(
-    os.environ.get("STRUCTURES_DIR", "structures_for_ovito"))
-FIGURES_DIR    = os.path.expanduser(
-    os.environ.get("FIGURES_DIR", "figures"))
+STRUCTURES_DIR = os.path.expanduser("~/phase3_mech/structures_for_ovito")
+FIGURES_DIR    = os.path.expanduser("~/phase3_mech/figures")
 
 # Structures to render (label, panel_title, panel_letter)
 # Paper 3 Fig 1: design-logic progression at ~constant porosity (phi 16-20%),
@@ -270,6 +275,7 @@ def main():
 
     print(f"\nAll figures saved to {FIGURES_DIR}/")
     print("Download to your laptop with:")
+    print(f"  scp 'o.soubai@login02:{FIGURES_DIR}/*.png' ./")
 
 
 if __name__ == "__main__":
