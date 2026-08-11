@@ -112,7 +112,7 @@ def fig_pareto(d):
     order = np.argsort(k[nd])
     ax.plot(k[nd][order], E[nd][order], "-", c=TEAL, lw=1.5, alpha=0.7, zorder=1)
     nudge = {"P1_high_50pct": (6, 8), "B_S4_quarter_high": (6, -12),
-             "D_AR2.0_wide": (-8, 10), "D_AR2.5_vwide": (-8, -12),
+             "D_AR2.0_wide": (-8, 10), "D_AR2.5_vwide": (-8, 4),
              "B_S4_quarter_low": (8, -8), "A_S2_d2": (-6, 10),
              "B_S4_aligned_low": (0, 14), "bulk_si": (-8, 6),
              "A_S4.5_d2": (8, 2)}
@@ -124,7 +124,10 @@ def fig_pareto(d):
     ax.margins(x=0.08, y=0.08)
     ax.set_xlabel(r"thermal conductivity $\kappa$ (W m$^{-1}$K$^{-1}$)")
     ax.set_ylabel(r"Young's modulus $E$ (GPa)")
-    ax.set_title("Thermal-mechanical trade-off:\n1 bulk reference + 16 porous architectures")
+    # ax.set_title("Thermal-mechanical trade-off:\n1 bulk reference + 16 porous architectures")
+    ax.legend(loc="lower right")
+    ax.plot(2.4, 70, marker="*", ms=13, c=CORAL, mec="k", mew=0.8,
+            ls="None", zorder=5, label="design target (2.4, 70)")
     ax.legend(loc="lower right")
     save(fig, "fig_pareto")
 
@@ -160,9 +163,9 @@ def fig_parity(d):
         ax.set_xlim(lo-pad, hi+pad); ax.set_ylim(lo-pad, hi+pad)
         ax.set_aspect("equal", "box")
         ax.set_xlabel(f"MD {unit}"); ax.set_ylabel(f"GP-LOOCV predicted {unit}")
-        ax.set_title(f"{'GP(log)' if log else 'GP'} : MAE={mae:.2f}, "
+        ax.set_title(f"{'(a) GP(log)' if log else '(b) GP'} : MAE={mae:.2f}, "
                      rf"$R^2$={r2:.2f}")
-    fig.suptitle("Leave-one-out forward-model parity", y=1.02)
+    # fig.suptitle("Leave-one-out forward-model parity", y=1.02)
     save(fig, "fig_parity")
 
 
@@ -188,7 +191,7 @@ def fig_importance(d):
             color=CORAL, edgecolor="k", lw=0.5, capsize=3, label=r"$E$")
     ax.set_yticks(yk); ax.set_yticklabels([f.replace("_uc", " width").replace("phi", "porosity") for f in feats])
     ax.set_xlabel("permutation importance (% of target total)")
-    ax.set_title("Feature importance: neck = thermal knob, AR = mechanical knob")
+    # ax.set_title("Feature importance: neck = thermal lever, AR = mechanical lever")
     ax.legend()
     save(fig, "fig_importance")
 
@@ -264,7 +267,7 @@ def fig_validation(d):
                 fontsize=9.5, xytext=(0, -32), textcoords="offset points", ha="center")
     ax.set_xlabel(r"thermal conductivity $\kappa$ (W m$^{-1}$K$^{-1}$)")
     ax.set_ylabel(r"Young's modulus $E$ (GPa)")
-    ax.set_title("Inverse-design validation: INV1 vs target and neighbors")
+    # ax.set_title("Inverse-design validation: INV1 vs target and neighbours")
     ax.legend(loc="lower right")
     save(fig, "fig_validation")
 
