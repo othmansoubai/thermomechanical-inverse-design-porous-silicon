@@ -28,8 +28,8 @@ from matplotlib.patches import Rectangle
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 # ---- Configuration ---------------------------------------------------------
-STRUCTURES_DIR = os.path.expanduser("~/phase3_mech/structures_for_ovito")
-FIGURES_DIR    = os.path.expanduser("~/phase3_mech/figures")
+STRUCTURES_DIR = os.path.expanduser(os.environ.get("STRUCTURES_DIR","structures_for_ovito"))
+FIGURES_DIR    = os.path.expanduser(os.environ.get("FIGURES_DIR","figures"))
 
 # Structures to render (label, panel_title, panel_letter)
 # Paper 3 Fig 1: design-logic progression at ~constant porosity (phi 16-20%),
