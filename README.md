@@ -87,8 +87,9 @@ available from the corresponding author on request.
 | `analyze_elastic.py` | E, ν and transverse asymmetry from stress–strain data |
 | `analyze_E_inv1.py` | the same fit applied to INV1 |
 | `make_paper3_figures.py` | Figures 2–6 |
-| `render_structures.py` | Figure 1 (structure cross-sections) |
-| `make_inv1_planview.py` | Supplementary Figure S1 (INV1 plan view) |
+| `make_fig1.py` | Figure 1: x–z cross-sections and x–y plan views, two rows |
+| `render_structures.py` | reader and slice renderer used by `make_fig1.py`; also writes the individual panels |
+| `make_inv1_planview.py` | Supplementary Figure S1 (INV1 plan view, detail) |
 
 ---
 
@@ -134,7 +135,7 @@ them from the data in this repository.
 
 ```bash
 python3 code/make_paper3_figures.py  # Figures 2–6
-python3 code/render_structures.py    # Figure 1
+python3 code/make_fig1.py            # Figure 1 (imports render_structures.py)
 python3 code/make_inv1_planview.py   # Figure S1
 ```
 
