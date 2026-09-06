@@ -1,4 +1,4 @@
-# Machine-learning-guided multi-objective inverse design of porous silicon
+# Machine-learning-guided multi-objective inverse design of porous silicon for targeted thermal conductivity and stiffness
 
 Code and data for a study that treats thermal conductivity (κ) and
 Young's modulus (E) as coupled objectives for porous silicon, maps the κ–E
@@ -12,10 +12,10 @@ returned **κ = 2.36 ± 0.18 W m⁻¹ K⁻¹** and **E = 68.4 ± 0.15 GPa**. INV
 excluded from all model fitting, so this is a held-out test of the design
 procedure rather than of a fit.
 
-A manuscript describing this work, by Othman Soubai and Younes Abouelhanoune
-(LSA Laboratory, ENSAH, Abdelmalek Essaadi University, Al-Hoceima, Morocco), is
-under review. This README will be updated with the full reference on
-publication.
+A manuscript describing this work, by Othman Soubai, Younes Abouelhanoune,
+and Mohammed Taibi (LSA Laboratory, ENSAH, Abdelmalek Essaadi University,
+Al-Hoceima, Morocco), has been submitted to Applied Thermal Engineering. 
+This README will be updated with the full reference on publication.
 
 ---
 
@@ -86,10 +86,10 @@ available from the corresponding author on request.
 | `analyze_kappa_inv1_20bin.py` | INV1 at the corrected twenty-bin resolution, with per-branch fit quality |
 | `analyze_elastic.py` | E, ν and transverse asymmetry from stress–strain data |
 | `analyze_E_inv1.py` | the same fit applied to INV1 |
-| `make_paper3_figures.py` | Figures 2–6 |
+| `make_paper3_figures.py` | Figures 2--5 and Figure 7 |
 | `make_fig1.py` | Figure 1: x–z cross-sections and x–y plan views, two rows |
 | `render_structures.py` | reader and slice renderer used by `make_fig1.py`; also writes the individual panels |
-| `make_inv1_planview.py` | Supplementary Figure S1 (INV1 plan view, detail) |
+| `make_inv1_planview.py` | Figure 6: INV1 plan view and pore-footprint detail |
 
 ---
 
@@ -134,9 +134,9 @@ free variable.
 them from the data in this repository.
 
 ```bash
-python3 code/make_paper3_figures.py  # Figures 2–6
+python3 code/make_paper3_figures.py  # Figures 2--5 and Figure 7
 python3 code/make_fig1.py            # Figure 1 (imports render_structures.py)
-python3 code/make_inv1_planview.py   # Figure S1
+python3 code/make_inv1_planview.py   # Figure 6
 ```
 
 Scripts use fixed random seeds (42), so model outputs are reproducible.
