@@ -70,8 +70,11 @@ than 1 % with no detectable curvature near the thermostatted slabs.
 Both reductions can therefore be run from the shipped data, and the headline
 thermal result derived rather than taken on trust.
 
-Raw output for the seventeen training geometries is not included; it is
-available from the corresponding author on request.
+This repository contains the processed datasets, analysis code, simulation
+inputs, structure-building scripts, and raw NEMD output for the validation
+geometry INV1. Raw simulation output for the seventeen training geometries
+is not included in the repository and is available from the corresponding
+author on reasonable request.
 
 ### `code/`
 
@@ -164,8 +167,9 @@ manuscript discusses this and proposes a configuration-based alternative.
 **Absolute conductivities are size-limited.** The cell is 48 unit cells
 (≈ 26 nm) along the transport direction, well below silicon's room-temperature
 phonon mean free paths, so absolute κ should not be compared with experiment.
-Comparisons between architectures at fixed cell size are unaffected, and those
-carry the conclusions.
+Comparisons between architectures at fixed cell size are more internally
+consistent, although geometry-dependent finite-size effects may remain.
+These relative comparisons support the conclusions of the study.
 
 **Potential.** Stillinger–Weber, from the `Si.sw` file distributed with LAMMPS
 (ε = 2.1683 eV). Benchmarks in the manuscript are against the potential's own
