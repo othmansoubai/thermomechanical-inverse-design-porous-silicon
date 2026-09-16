@@ -14,7 +14,7 @@ procedure rather than of a fit.
 
 A manuscript describing this work, by Othman Soubai, Younes Abouelhanoune,
 and Mohammed Taibi (LSA Laboratory, ENSAH, Abdelmalek Essaadi University,
-Al-Hoceima, Morocco), has been submitted to Applied Thermal Engineering. 
+Al-Hoceima, Morocco), has been submitted to Materials Science and Engineering: B.
 This README will be updated with the full reference on publication.
 
 ---
