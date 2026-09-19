@@ -1,9 +1,10 @@
-# Machine-learning-guided multi-objective inverse design of porous silicon for targeted thermal conductivity and stiffness
+# Machine-learning-guided multi-objective inverse design of nanoporous silicon with coupled thermal conductivity and stiffness
 
-Code and data for a study that treats thermal conductivity (κ) and
-Young's modulus (E) as coupled objectives for porous silicon, maps the κ–E
-Pareto front over 17 geometries, and uses a build-aware inverse search to
-design a new structure at a targeted point on that plane.
+Code and data for a study on the machine-learning-guided multi-objective 
+inverse design of nanoporous silicon with coupled thermal conductivity and stiffness.
+The work maps the \(\kappa\)–\(E\) Pareto front over 17 geometries and 
+uses a build-aware inverse-design workflow to identify and validate 
+a new structure at a targeted point in the thermomechanical design space.
 
 **Headline result.** Targeting κ = 2.4 W m⁻¹ K⁻¹ and E = 70 GPa — a point no
 measured geometry occupied — the search proposed a novel architecture
@@ -14,7 +15,7 @@ procedure rather than of a fit.
 
 A manuscript describing this work, by Othman Soubai, Younes Abouelhanoune,
 and Mohammed Taibi (LSA Laboratory, ENSAH, Abdelmalek Essaadi University,
-Al-Hoceima, Morocco), has been submitted to Materials Science and Engineering: B.
+Al-Hoceima, Morocco), has been submitted to Physica B: Condensed Matter.
 This README will be updated with the full reference on publication.
 
 ---
